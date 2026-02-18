@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const HDFCInsuranceApp());
@@ -16,7 +16,7 @@ class HDFCInsuranceApp extends StatelessWidget {
       title: 'HDFC Insurance Dashboard',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const DashboardScreen(),
+      home: const LoginScreen(),
     );
   }
 }

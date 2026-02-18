@@ -18,10 +18,11 @@ class SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: double.infinity,
-      child: Container(
-        padding: const EdgeInsets.all(AppTheme.spacing20),
+    return Container(
+          padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spacing16,
+          vertical: AppTheme.spacing8,
+        ),
         decoration: BoxDecoration(
           color: AppTheme.cardWhite,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -36,10 +37,6 @@ class SummaryCard extends StatelessWidget {
             // Icon
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              ),
               child: Icon(
                 icon,
                 color: AppTheme.primaryBlue,
@@ -85,7 +82,6 @@ class SummaryCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

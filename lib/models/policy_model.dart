@@ -25,6 +25,7 @@ class Policy {
 enum PolicyStatus {
   active,
   due,
+  expired,
 }
 
 /// Policy category enum
@@ -32,6 +33,7 @@ enum PolicyCategory {
   all,
   life,
   health,
+  expired,
   others,
 }
 
@@ -45,6 +47,8 @@ extension PolicyCategoryExtension on PolicyCategory {
         return 'Life Insurance';
       case PolicyCategory.health:
         return 'Health Insurance';
+      case PolicyCategory.expired:
+        return 'Expired';
       case PolicyCategory.others:
         return 'Others';
     }
@@ -114,6 +118,26 @@ class PolicyData {
         annualPremium: 10000,
         sumInsured: 1000000,
         category: PolicyCategory.life,
+      ),
+      Policy(
+        id: '7',
+        name: 'HDFC Critical Illness',
+        policyId: 'CI-2023-142536',
+        description: 'Critical illness coverage plan',
+        status: PolicyStatus.expired,
+        annualPremium: 15000,
+        sumInsured: 500000,
+        category: PolicyCategory.expired,
+      ),
+      Policy(
+        id: '8',
+        name: 'HDFC Motor Insurance',
+        policyId: 'MS-2022-748596',
+        description: 'Comprehensive car insurance',
+        status: PolicyStatus.expired,
+        annualPremium: 12000,
+        sumInsured: 450000,
+        category: PolicyCategory.expired,
       ),
     ];
   }

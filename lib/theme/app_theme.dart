@@ -12,10 +12,12 @@ class AppTheme {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color statusActive = Color(0xFF10B981);
   static const Color statusDue = Color(0xFFFBBF24);
+  static const Color statusExpired = Color(0xFF9CA3AF);
+  static const Color primaryRed = Color(0xFFD32F2F);
+  static const Color darkestBlue = Color(0xFF003366);
   
   // Spacing System
-  static const double spacing68 = 2.0;
-  static const double spacing69 = 2.0;
+  static const double spacing2 = 2.0;
   static const double spacing4 = 4.0;
   static const double spacing8 = 8.0;
   static const double spacing12 = 12.0;
@@ -23,6 +25,7 @@ class AppTheme {
   static const double spacing20 = 20.0;
   static const double spacing24 = 24.0;
   static const double spacing32 = 32.0;
+  static const double spacing48 = 48.0;
   
   // Border Radius
   static const double radiusSmall = 12.0;

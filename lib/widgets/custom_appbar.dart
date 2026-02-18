@@ -3,14 +3,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/app_theme.dart';
 
 /// Custom AppBar for HDFC dashboard
+import '../screens/login_screen.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String customerName;
   final String customerId;
+  final VoidCallback? onLogoTap;
 
   const CustomAppBar({
     super.key,
     required this.customerName,
     required this.customerId,
+    this.onLogoTap,
   });
 
   @override
@@ -19,136 +23,153 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
 
-        return Container(
-          height: preferredSize.height,
-          decoration: const BoxDecoration(
-            color: AppTheme.primaryBlue,
-          ),
-          padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? AppTheme.spacing16 : AppTheme.spacing24,
-            vertical: AppTheme.spacing12,
-          ),
+        return Material(
+          color: AppTheme.primaryBlue,
+          child: Container(
+            height: preferredSize.height,
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? AppTheme.spacing16 : AppTheme.spacing24,
+              vertical: 6,
+            ),
           child: SafeArea(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // HDFC Logo
-                SvgPicture.asset(
-                  'assets/images/hdfc-bank-logo.svg',
-                  width: isMobile ? 88 : 132,
-                  height: isMobile ? 20 : 26,
+                InkWell(
+                  onTap: onLogoTap,
+                  child: SvgPicture.asset(
+                    'assets/images/hdfc-bank-logo.svg',
+                    height: isMobile ? (constraints.maxWidth < 360 ? 18 : 22) : 29,
+                  ),
                 ),
                 
                 // Right side: Customer info and logout
-                Row(
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          customerName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontSize: isMobile ? 12 : 14,
-                          ),
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              customerName,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontSize: isMobile ? 12 : 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            if (!isMobile) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Customer ID: $customerId',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        if (!isMobile) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            'Customer ID: $customerId',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11,
+                      ),
+                      const SizedBox(width: AppTheme.spacing8),
+                      // Avatar with initials and Popup Menu
+                      MenuAnchor(
+                        style: MenuStyle(
+                          backgroundColor: WidgetStateProperty.all(Colors.white),
+                          elevation: WidgetStateProperty.all(10),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(width: AppTheme.spacing12),
-                    // Avatar with initials and Popup Menu
-                    MenuAnchor(
-                      style: MenuStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.white),
-                        elevation: WidgetStateProperty.all(10),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                          ),
+                          padding: WidgetStateProperty.all(const EdgeInsets.all(AppTheme.spacing8)),
+                          shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
                         ),
-                        padding: WidgetStateProperty.all(const EdgeInsets.all(AppTheme.spacing8)),
-                        shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
-                      ),
-                      builder: (context, controller, child) {
-                        return GestureDetector(
-                          onTap: () {
-                            if (controller.isOpen) {
-                              controller.close();
-                            } else {
-                              controller.open();
-                            }
-                          },
-                          child: CircleAvatar(
-                            radius: isMobile ? 16 : 22,
-                            backgroundColor: Colors.white,
-                            child: Text(
-                              'CN',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppTheme.primaryBlue,
-                                fontWeight: FontWeight.bold,
-                                fontSize: isMobile ? 12 : 14,
+                        builder: (context, controller, child) {
+                          return InkWell(
+                            onTap: () {
+                              if (controller.isOpen) {
+                                controller.close();
+                              } else {
+                                controller.open();
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(22),
+                            child: CircleAvatar(
+                              radius: isMobile ? 12 : 18,
+                              backgroundColor: Colors.white,
+                              child: Text(
+                                _getInitials(customerName),
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppTheme.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isMobile ? 10 : 14,
+                                ),
                               ),
                             ),
+                          );
+                        },
+                        menuChildren: [
+                          _buildMenuItem(
+                            context,
+                            icon: Icons.person_outline,
+                            title: 'Profile',
                           ),
-                        );
-                      },
-                      menuChildren: [
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.person_outline,
-                          title: 'Profile',
-                        ),
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.grid_view_outlined,
-                          title: 'Dashboard',
-                          subtitle: 'coverage insights',
-                        ),
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.help_outline,
-                          title: 'Get Help',
-                        ),
-                        _buildMenuItem(
-                          context,
-                          icon: Icons.support_agent_outlined,
-                          title: 'Contact Us',
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: isMobile ? 4 : AppTheme.spacing12),
-                    // Logout icon
-                    IconButton(
-                      icon: Icon(
-                        Icons.logout,
-                        color: Colors.white,
-                        size: isMobile ? 18 : 20,
+                          const SizedBox(height: 8),
+                          _buildMenuItem(
+                            context,
+                            icon: Icons.grid_view_outlined,
+                            title: 'Dashboard',
+                            subtitle: 'coverage insights',
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMenuItem(
+                            context,
+                            icon: Icons.help_outline,
+                            title: 'Get Help',
+                          ),
+                          const SizedBox(height: 8),
+                          _buildMenuItem(
+                            context,
+                            icon: Icons.support_agent_outlined,
+                            title: 'Contact Us',
+                          ),
+                        ],
                       ),
-                      onPressed: () {
-                        // Logout action
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
+                      SizedBox(width: isMobile ? 4 : AppTheme.spacing8),
+                      // Logout icon
+                      IconButton(
+                        icon: Icon(
+                          Icons.logout,
+                          color: Colors.white,
+                          size: isMobile ? 18 : 20,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          );
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildMenuItem(
     BuildContext context, {
@@ -204,5 +225,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize => const Size.fromHeight(60);
+
+  String _getInitials(String name) {
+    if (name.trim().isEmpty) return '--';
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '--';
+    if (parts.length == 1) {
+      return parts[0].isNotEmpty ? parts[0][0].toUpperCase() : '--';
+    }
+    final first = parts[0][0];
+    final last = parts[parts.length - 1][0];
+    return (first + last).toUpperCase();
+  }
 }

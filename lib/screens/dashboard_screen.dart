@@ -8,7 +8,8 @@ import '../widgets/policy_card.dart';
 
 /// Main dashboard screen displaying insurance policies and summary
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final String customerId;
+  const DashboardScreen({super.key, required this.customerId});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -18,14 +19,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
   PolicyCategory _selectedCategory = PolicyCategory.all;
   final List<Policy> _allPolicies = PolicyData.getSamplePolicies();
 
-  /// Get filtered policies based on selected category
+  /// Get filtered and sorted policies based on selected category
   List<Policy> get _filteredPolicies {
+    List<Policy> filtered;
     if (_selectedCategory == PolicyCategory.all) {
-      return _allPolicies;
+      filtered = List.from(_allPolicies);
+    } else {
+      filtered = _allPolicies
+          .where((policy) => policy.category == _selectedCategory)
+          .toList();
     }
-    return _allPolicies
-        .where((policy) => policy.category == _selectedCategory)
-        .toList();
+
+    // Sort by status: Due (0), Active (1), Expired (2)
+    filtered.sort((a, b) {
+      int getPriority(PolicyStatus status) {
+        switch (status) {
+          case PolicyStatus.due: return 0;
+          case PolicyStatus.active: return 1;
+          case PolicyStatus.expired: return 2;
+        }
+      }
+      return getPriority(a.status).compareTo(getPriority(b.status));
+    });
+    return filtered;
   }
 
   /// Calculate total annual premium
@@ -40,20 +56,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Cache filtered policies for this build cycle to ensure consistency
+    final filteredPolicies = _filteredPolicies;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
-        final padding = isMobile ? AppTheme.spacing16 : AppTheme.spacing24;
-
         return Scaffold(
           backgroundColor: AppTheme.backgroundGrey,
-          appBar: const CustomAppBar(
-            customerName: 'Customer Name',
-            customerId: 'HDFC000000',
+          appBar: CustomAppBar(
+            customerName: 'Hrisheekesh Rabha',
+            customerId: widget.customerId,
+            onLogoTap: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => DashboardScreen(customerId: widget.customerId),
+                ),
+                (route) => false,
+              );
+            },
           ),
           body: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: padding),
+              padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -61,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   
                   // Welcome text
                   Text(
-                    'Welcome Back, Customer!',
+                    'Welcome back, Hrisheekesh Rabha!',
                     style: isMobile 
                         ? Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)
                         : Theme.of(context).textTheme.headlineLarge,
@@ -84,7 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: AppTheme.spacing24),
                   
                   // Policy cards grid
-                  _buildPolicyGrid(constraints.maxWidth),
+                  _buildPolicyGrid(constraints.maxWidth, filteredPolicies),
                   const SizedBox(height: AppTheme.spacing24),
                 ],
               ),
@@ -117,8 +142,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     ];
 
-    if (maxWidth < 700) {
-      // Mobile & Small Tablet: Horizontal scroll
+    if (maxWidth < 600) {
+      // Mobile: Vertical stack, full width
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: cards.map((card) => Padding(
+          padding: const EdgeInsets.only(bottom: AppTheme.spacing16),
+          child: card,
+        )).toList(),
+      );
+    } else if (maxWidth < 1100) {
+      // Tablet: Horizontal scroll or wrapping
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -129,9 +163,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     } else {
-      // Tablet & Desktop: Single Row with Expanded cards for even width
+      // Desktop: Single Row with Expanded cards for even width
       return IntrinsicHeight(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: cards.map((card) => Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: AppTheme.spacing16),
@@ -144,19 +179,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   /// Build responsive grid of policy cards
-  Widget _buildPolicyGrid(double maxWidth) {
+  Widget _buildPolicyGrid(double maxWidth, List<Policy> filteredPolicies) {
     int crossAxisCount = 1;
     double childAspectRatio = 1.8;
 
     if (maxWidth > 1100) {
       crossAxisCount = 3;
-      childAspectRatio = 1.6;
+      childAspectRatio = 1.75;
     } else if (maxWidth > 650) {
       crossAxisCount = 2;
-      childAspectRatio = 1.8;
+      childAspectRatio = 1.9;
     } else {
       crossAxisCount = 1;
-      childAspectRatio = 3.0;
+      childAspectRatio = 1.6; // Increased height to prevent overflow
     }
     
     return GridView.builder(
@@ -168,9 +203,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         mainAxisSpacing: AppTheme.spacing16,
         childAspectRatio: childAspectRatio,
       ),
-      itemCount: _filteredPolicies.length,
+      itemCount: filteredPolicies.length,
       itemBuilder: (context, index) {
-        return PolicyCard(policy: _filteredPolicies[index]);
+        return PolicyCard(policy: filteredPolicies[index]);
       },
     );
   }

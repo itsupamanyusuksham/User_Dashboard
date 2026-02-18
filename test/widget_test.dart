@@ -14,7 +14,7 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const HDFCInsuranceApp());
 
-    // Verify that the welcome text is present.
-    expect(find.text('Welcome Back, Customer!'), findsOneWidget);
+    // Verify that the welcome text on Login screen is present.
+    expect(find.text('Welcome'), findsOneWidget);
   });
 }
